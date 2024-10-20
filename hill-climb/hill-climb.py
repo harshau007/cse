@@ -2,7 +2,7 @@
 import copy
 
 # This variable can be changed to change
-# the program from 8 puzzle(n=3) to 15 
+# the program from 8 puzzle(n=3) to 15
 # puzzle(n=4) to 24 puzzle(n=5)...
 n = 3
 
