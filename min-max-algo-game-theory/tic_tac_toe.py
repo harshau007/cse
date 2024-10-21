@@ -1,4 +1,4 @@
-from MinMaxTicTacToe import MinMax
+from MinMax import MinMax
 
 class TicTacToe:
     def __init__(self):

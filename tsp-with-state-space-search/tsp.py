@@ -1,5 +1,6 @@
 import itertools
 import sys
+import random
 from queue import Queue, LifoQueue, PriorityQueue
 
 
@@ -30,18 +31,6 @@ class TSPSolver:
 
         return best_route, min_distance
 
-    """
-        1) We use a Queue to explore nodes level by level. In each level, all cities are explored one at a time.
-        2) The current city, path, and distance are stored in the queue.
-        3) Once all cities are visited, the cost to return to the starting city is calculated and compared to the minimum distance found so far.
-        
-        Time Complexity:
-            O(b^d): BFS explores every possible path, meaning it expands all nodes at a given depth before moving to the next. For TSP, this can be very expensive since the branching factor grows with the number of cities.
-        Space Complexity:
-            O(b^d): BFS stores all nodes at the current level of the search tree, leading to exponential space consumption as the number of cities increases.
-        Solution Optimality:
-            BFS guarantees an optimal solution because it explores all possible routes level by level. However, it's impractical for larger instances due to high time and space complexity.
-    """
     def bfs(self):
         """
         Solves the TSP using Breadth-First Search.
@@ -72,18 +61,6 @@ class TSPSolver:
 
         return best_route, min_distance
 
-    """
-        1) We use a LifoQueue (stack) to explore as deep as possible along each path before backtracking.
-        2) Like BFS, we store the current city, path, and distance on the stack.
-        3) The difference is in the order of exploration, as DFS goes deeper into the solution tree first.
-        
-        Time Complexity:
-            O(b^d): DFS may explore as many states as BFS, as it will visit all permutations in the worst case. However, DFS may stop early, making it faster in some cases, but it's not guaranteed.
-        Space Complexity:
-            O(d): DFS only needs to store the current path and the recursion stack, so its space complexity is linear in the depth (or the number of cities). It has a significant space advantage over BFS.
-        Solution Optimality:
-            DFS does not guarantee an optimal solution unless it explores every possible path, which would make it behave like BFS. Without optimization (like pruning), it might find suboptimal paths. Optimizations like branch-and-bound can improve it.
-    """
     def dfs(self):
         """
         Solves the TSP using Depth-First Search.
@@ -114,19 +91,6 @@ class TSPSolver:
 
         return best_route, min_distance
 
-    """
-        1) A* uses a priority queue (PriorityQueue), where the queue is ordered by a cost function f(n) = g(n) + h(n) where:
-                g(n) is the current distance.
-                h(n) is the heuristic estimate of the remaining cost.
-        2) The heuristic function here estimates the remaining cost by considering the minimum distance to unvisited cities.
-        
-        Time Complexity:
-            O(b^d) (worst case): In the worst case, A* may have to explore all nodes, but it often performs much better than BFS or DFS because it uses a heuristic to prune large portions of the search tree. A good heuristic can reduce the time complexity significantly.
-        Space Complexity:
-            O(b^d): Like BFS, A* stores all nodes in memory since it expands nodes in order of the lowest cost. This can lead to high space usage, but it's generally more efficient than BFS for large problems because it explores fewer states.
-        Solution Optimality:
-            A* guarantees an optimal solution as long as the heuristic is admissible (i.e., it never overestimates the true cost to reach the goal). It is more efficient than BFS while still maintaining optimality.
-    """
     def a_star(self):
         """
         Solves the TSP using the A* search algorithm.
@@ -160,10 +124,87 @@ class TSPSolver:
 
         return best_route, min_distance
 
+    def greedy_search(self, start=0):
+        """
+        Performs Greedy search to solve TSP starting from a specified city.
+        :return: The best route and minimum distance.
+        """
+        visited = [False] * self.num_cities
+        route = [start]
+        visited[start] = True
+        total_distance = 0
+
+        current_city = start
+        for _ in range(self.num_cities - 1):
+            nearest_city = None
+            nearest_distance = float('inf')
+            
+            # Find nearest unvisited city
+            for next_city in range(self.num_cities):
+                if not visited[next_city] and self.distance_matrix[current_city][next_city] < nearest_distance:
+                    nearest_city = next_city
+                    nearest_distance = self.distance_matrix[current_city][next_city]
+            
+            route.append(nearest_city)
+            visited[nearest_city] = True
+            total_distance += nearest_distance
+            current_city = nearest_city
+
+        # Return to the starting city
+        total_distance += self.distance_matrix[current_city][start]
+        route.append(start)
+
+        return route, total_distance
+
+    def hill_climbing(self):
+        """
+        Solves the TSP using Hill Climbing algorithm.
+        :return: The best route and minimum distance.
+        """
+        # Start with a random route
+        current_route = list(range(self.num_cities))
+        random.shuffle(current_route)
+        current_distance = self.calculate_total_distance(current_route, self.distance_matrix)
+        
+        while True:
+            neighbors = self.get_neighbors(current_route)
+            next_route = None
+            next_distance = current_distance
+            
+            # Find the best neighbor
+            for neighbor in neighbors:
+                neighbor_distance = self.calculate_total_distance(neighbor, self.distance_matrix)
+                if neighbor_distance < next_distance:
+                    next_route = neighbor
+                    next_distance = neighbor_distance
+            
+            # If no better neighbor is found, stop
+            if next_route is None:
+                break
+            
+            # Move to the better neighbor
+            current_route = next_route
+            current_distance = next_distance
+
+        return current_route, current_distance
+
+    def get_neighbors(self, route):
+        """
+        Generate neighboring routes by swapping two cities.
+        :param route: Current route.
+        :return: A list of neighboring routes.
+        """
+        neighbors = []
+        for i in range(len(route)):
+            for j in range(i + 1, len(route)):
+                neighbor = route[:]
+                neighbor[i], neighbor[j] = neighbor[j], neighbor[i]
+                neighbors.append(neighbor)
+        return neighbors
+
     def estimate_heuristic(self, current_city, path):
         """
-        A heuristic function for A* algorithm. Here, we will use the minimum distance from the current city
-        to any remaining city as the heuristic.
+        A heuristic function for A* algorithm.
         :param current_city: Current city in the path
         :param path: The current path
         :return: Heuristic value (minimum cost estimate to complete the tour)
@@ -189,7 +230,6 @@ class TSPSolver:
             to_city = route[(i + 1) % len(route)]  # Loop back to the start city
             total_distance += distance_matrix[from_city][to_city]
         return total_distance
-
 
     def print_route(self, route):
         """

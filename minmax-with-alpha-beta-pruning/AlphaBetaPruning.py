@@ -20,18 +20,18 @@ Definations:
 
 # Simulated game tree with node values (example game states)
 # The structure maps each node to its child nodes or final evaluation if terminal
-"""
-        A
-       / \
-      B   C
-     / \ / \
-   D  E F  G
-  -1  3 5  0
+# """
+#         A
+#        / \
+#       B   C
+#      / \ / \
+#    D  E F  G
+#   -1  3 5  0
 
-    A is the root node.
-    B and C are child nodes of A.
-    D, E, F, and G are terminal nodes with corresponding evaluation values (-1, 3, 5, 0).
-"""
+#     A is the root node.
+#     B and C are child nodes of A.
+#     D, E, F, and G are terminal nodes with corresponding evaluation values (-1, 3, 5, 0).
+# """
 game_tree = {
     'A': ['B', 'C'],
     'B': ['D', 'E'],

@@ -27,3 +27,15 @@ best_route_astar, min_distance_astar = solver.a_star()
 print("\nBest route (A*):")
 solver.print_route(best_route_astar)
 print(f"Minimum Distance (A*): {min_distance_astar}")
+
+# Solve using Greedy Search
+best_route_greedy, min_distance_greedy = solver.greedy_search()
+print("\nBest route (Greedy Search):")
+solver.print_route(best_route_greedy)
+print(f"Minimum Distance (Greedy Search): {min_distance_greedy}")
+
+# Solve using Hill Climbing
+best_route_hill, min_distance_hill = solver.hill_climbing()
+print("\nBest route (Hill Climbing):")
+solver.print_route(best_route_hill)
+print(f"Minimum Distance (Hill Climbing): {min_distance_hill}")
